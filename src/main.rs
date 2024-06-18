@@ -2,6 +2,7 @@ mod cli;
 mod config;
 mod logging;
 mod subcommands;
+mod util;
 
 use logging::{log_as_error, set_verbosity, Error};
 

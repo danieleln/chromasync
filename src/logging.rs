@@ -26,6 +26,9 @@ pub enum Error {
 
     #[error("{}", .0)]
     InvalidEnvironment(String),
+
+    #[error("{}", .0)]
+    ColorschemeError(String),
 }
 
 impl From<clap::error::Error> for Error {
