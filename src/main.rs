@@ -2,13 +2,24 @@ mod cli;
 mod config;
 mod logging;
 
-use logging::{log_as_error, Error};
+use logging::{log_as_error, set_verbosity, Error};
 
 fn main() {
-    let matches = cli::build_parser().try_get_matches().map_err(|e| e.into());
+    let result = app();
 
-    match matches {
-        Err(e) => log_as_error(e),
-        Ok(_) => {}
+    if let Err(e) = result {
+        log_as_error(e);
     }
+}
+
+fn app() -> Result<(), Error> {
+    // Parses input arguments
+    let args = cli::build_parser()
+        .try_get_matches()
+        .map_err(|e| Error::from(e))?;
+
+    // Sets logging verbosity
+    set_verbosity(args);
+
+    Ok(())
 }

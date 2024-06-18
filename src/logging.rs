@@ -1,3 +1,24 @@
+use lazy_static::lazy_static;
+use std::sync::Mutex;
+
+lazy_static! {
+    static ref VERBOSE: Mutex<bool> = Mutex::new(false);
+    static ref QUIET: Mutex<bool> = Mutex::new(false);
+}
+
+pub fn set_verbosity(args: clap::ArgMatches) {
+    let mut verbose = VERBOSE.lock().unwrap();
+    let mut quiet = QUIET.lock().unwrap();
+
+    if args.get_flag("verbose") {
+        *verbose = true;
+        *quiet = false;
+    } else if args.get_flag("quiet") {
+        *quiet = true;
+        *verbose = false;
+    }
+}
+
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("{}", .0)]
@@ -10,6 +31,7 @@ impl From<clap::error::Error> for Error {
     }
 }
 
+#[derive(PartialEq)]
 pub enum Level {
     Error,
     Warning,
@@ -17,6 +39,17 @@ pub enum Level {
 }
 
 pub fn log_as(level: Level, error: Error) {
+    let verbose = VERBOSE.lock().unwrap();
+    let quiet = QUIET.lock().unwrap();
+
+    if *quiet == true {
+        return;
+    }
+
+    if level == Level::Info && *verbose == false {
+        return;
+    }
+
     let label = match level {
         Level::Error => "\x1b[31mERR",
         Level::Warning => "\x1b[33mWRN",

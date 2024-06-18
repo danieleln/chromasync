@@ -8,3 +8,6 @@ edition = "2021"
 [dependencies]
 clap = "4.5.7"
 const_format = "0.2.32"
+lazy_static = "1.4.0"
+once_cell = "1.19.0"
+thiserror = "1.0.61"
