@@ -6,7 +6,7 @@ lazy_static! {
     static ref QUIET: Mutex<bool> = Mutex::new(false);
 }
 
-pub fn set_verbosity(args: clap::ArgMatches) {
+pub fn set_verbosity(args: &clap::ArgMatches) {
     let mut verbose = VERBOSE.lock().unwrap();
     let mut quiet = QUIET.lock().unwrap();
 

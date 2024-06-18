@@ -1,6 +1,7 @@
 mod cli;
 mod config;
 mod logging;
+mod subcommands;
 
 use logging::{log_as_error, set_verbosity, Error};
 
@@ -22,7 +23,15 @@ fn app() -> Result<(), Error> {
     let _ = config::environ::build_dirs()?;
 
     // Sets logging verbosity
-    set_verbosity(args);
+    set_verbosity(&args);
+
+    // Runs the required subcommand
+    let _ = match args.subcommand() {
+        Some(("list", args)) => subcommands::list(args),
+        Some(("load", args)) => subcommands::load(args),
+        Some(("reload", args)) => subcommands::reload(args),
+        _ => unreachable!(),
+    }?;
 
     Ok(())
 }
