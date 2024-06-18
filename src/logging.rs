@@ -23,6 +23,9 @@ pub fn set_verbosity(args: clap::ArgMatches) {
 pub enum Error {
     #[error("{}", .0)]
     InvalidCommandLineArgument(String),
+
+    #[error("{}", .0)]
+    InvalidEnvironment(String),
 }
 
 impl From<clap::error::Error> for Error {

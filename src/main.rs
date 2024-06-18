@@ -18,6 +18,9 @@ fn app() -> Result<(), Error> {
         .try_get_matches()
         .map_err(|e| Error::from(e))?;
 
+    // Builds project directories
+    let _ = config::environ::build_dirs()?;
+
     // Sets logging verbosity
     set_verbosity(args);
 
