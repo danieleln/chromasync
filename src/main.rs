@@ -1,4 +1,5 @@
 mod cli;
+mod colortable;
 mod config;
 mod logging;
 mod subcommands;
