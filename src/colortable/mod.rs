@@ -1,6 +1,7 @@
 mod rgb;
 mod visitor;
 
+use crate::logging::Error;
 use rgb::RGB;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
@@ -13,6 +14,10 @@ pub struct ColorTable(HashMap<String, RGB>);
 impl ColorTable {
     pub fn with_capacity(capacity: usize) -> ColorTable {
         ColorTable(HashMap::with_capacity(capacity))
+    }
+
+    pub fn from_json_str(str: &str) -> Result<Self, Error> {
+        serde_json::from_str(str).map_err(|e| Error::ColorschemeError(e.to_string()))
     }
 }
 

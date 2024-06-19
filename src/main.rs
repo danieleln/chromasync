@@ -1,3 +1,4 @@
+mod blueprint;
 mod cli;
 mod colortable;
 mod config;

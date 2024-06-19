@@ -29,6 +29,12 @@ pub enum Error {
 
     #[error("{}", .0)]
     ColorschemeError(String),
+
+    #[error("{}", .0)]
+    BlueprintError(String),
+
+    #[error("{}", .0)]
+    ExecError(String),
 }
 
 impl From<clap::error::Error> for Error {

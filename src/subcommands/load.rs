@@ -1,3 +1,4 @@
+use crate::blueprint::build_blueprints;
 use crate::colortable::ColorTable;
 use crate::config::colorscheme::FILE_EXTENSION;
 use crate::config::environ::COLORSCHEMES_DIR;
@@ -6,9 +7,10 @@ use crate::util;
 use clap::ArgMatches;
 
 pub fn load(args: &ArgMatches) -> Result<(), Error> {
-    let colorscheme = load_colorscheme_file(args.get_one::<String>("colorscheme").unwrap());
+    let colorscheme_name = args.get_one::<String>("colorscheme").unwrap();
+    let mut colors = load_colorscheme_file(colorscheme_name)?;
 
-    println!("{:?}", colorscheme);
+    build_blueprints(&mut colors, &args)?;
 
     Ok(())
 }
@@ -28,9 +30,8 @@ fn load_colorscheme_file(filename: &str) -> Result<ColorTable, Error> {
     // Reads the file content
     let json_str = util::read_file(&path).map_err(|e| Error::ColorschemeError(e))?;
 
-    // Tries to parse the Colorscheme
-    let colorscheme: ColorTable = serde_json::from_str(&json_str.clone())
-        .map_err(|e| Error::ColorschemeError(e.to_string()))?;
+    // Parses the colorscheme
+    let colorscheme = ColorTable::from_json_str(&json_str)?;
 
     Ok(colorscheme)
 }
