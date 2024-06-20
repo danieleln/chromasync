@@ -8,7 +8,7 @@ use crate::logging::{log_as_error, Error, Error::BlueprintError, Error::ExecErro
 use parse_color::parse_color;
 use parse_directive::Directive;
 use std::fs::{read_dir, DirEntry, File};
-use std::io::{BufRead, BufReader};
+use std::io::{BufRead, BufReader, Write};
 use std::process::Command;
 
 pub fn build_blueprints(colors: &mut ColorTable) -> Result<(), Error> {
@@ -53,7 +53,7 @@ fn build_blueprint(path: &DirEntry, colors: &mut ColorTable) -> Result<(), Error
     let reader = BufReader::new(file);
 
     // Default directive values
-    let mut directives = Directive::new_from(&path).map_err(|e| BlueprintError(e))?;
+    let mut directives = Directive::new();
 
     let mut blueprint_instance = String::new();
 
@@ -70,12 +70,18 @@ fn build_blueprint(path: &DirEntry, colors: &mut ColorTable) -> Result<(), Error
         if parsing_directive {
             directives.parse(&line).map_err(|e| BlueprintError(e))?;
         } else {
-            blueprint_instance.push_str(&parse_color(&line, colors, &directives));
+            blueprint_instance.push_str(&parse_color(&line, colors, &directives, &path));
             blueprint_instance.push_str("\n");
         }
     }
 
-    println!("{}", blueprint_instance);
+    // Writes the blueprint instance to a file
+    let out_dir = directives.output_directory;
+    let out_file = out_dir.join(path.file_name());
+    let mut file = File::create(out_file).map_err(|e| BlueprintError(e.to_string()))?;
+
+    file.write_all(blueprint_instance.as_bytes())
+        .map_err(|e| BlueprintError(e.to_string()))?;
 
     Ok(())
 }

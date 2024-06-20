@@ -2,11 +2,11 @@ use crate::config::blueprint::directive::{
     DIRECTIVE_COLOR_FORMAT, DIRECTIVE_OUTPUT_DIRECTORY, HEX_6_DIGITS_WO_HASHTAG,
     HEX_6_DIGITS_W_HASHTAG, PREFIX, SEPARATOR,
 };
+use crate::config::environ::OUT_DIR;
 use crate::util::expand_home_dir;
 use const_format::formatcp;
 use once_cell::sync::Lazy;
 use regex::Regex;
-use std::fs::DirEntry;
 use std::path::PathBuf;
 
 static REGEX_KEY_VAL_DIRECTIVE: Lazy<Regex> =
@@ -24,17 +24,11 @@ pub struct Directive {
 impl Directive {
     // Creates a new Directive struct. The default output directory is
     // the parent of the blueprint being parsed
-    pub fn new_from(blueprint: &DirEntry) -> Result<Self, String> {
-        let blueprint = blueprint.path();
-        let output_directory = blueprint.parent().ok_or(format!(
-            "Can't find parent directory of `{}`.",
-            blueprint.display()
-        ))?;
-
-        Ok(Self {
+    pub fn new() -> Self {
+        Self {
             color_format: HEX_6_DIGITS_W_HASHTAG.to_string(),
-            output_directory: output_directory.to_path_buf(),
-        })
+            output_directory: OUT_DIR.to_path_buf(),
+        }
     }
 
     pub fn parse(&mut self, line: &str) -> Result<(), String> {
