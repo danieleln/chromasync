@@ -1,3 +1,4 @@
+use crate::config::blueprint::directive::{HEX_6_DIGITS_WO_HASHTAG, HEX_6_DIGITS_W_HASHTAG};
 use once_cell::sync::Lazy;
 use regex::Regex;
 
@@ -39,6 +40,17 @@ impl RGB {
             _mix(self.1, color.1),
             _mix(self.2, color.2),
         )
+    }
+
+    // Converts the RGB tuple into a String with a specific format
+    pub fn format(&self, format: &String) -> Result<String, String> {
+        let hex_str = format!("{:02X}{:02X}{:02X}", self.0, self.1, self.2);
+
+        match format.as_str() {
+            HEX_6_DIGITS_W_HASHTAG => Ok(format!("#{}", hex_str)),
+            HEX_6_DIGITS_WO_HASHTAG => Ok(hex_str),
+            _ => Err(format!("Invalid color format `{}`", format)),
+        }
     }
 }
 

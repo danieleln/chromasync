@@ -10,7 +10,7 @@ pub fn load(args: &ArgMatches) -> Result<(), Error> {
     let colorscheme_name = args.get_one::<String>("colorscheme").unwrap();
     let mut colors = load_colorscheme_file(colorscheme_name)?;
 
-    build_blueprints(&mut colors, &args)?;
+    build_blueprints(&mut colors)?;
 
     Ok(())
 }

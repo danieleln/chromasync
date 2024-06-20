@@ -1,3 +1,5 @@
+pub const MIXED_COLOR_FIELD_SEPARATOR: &str = ":";
+
 pub mod directive {
     // Each directive consists of "{PREFIX}{DIRECTIVE}{SEPARATOR} {VALUE}"
     pub const PREFIX: &str = "%";

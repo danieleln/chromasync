@@ -1,19 +1,17 @@
+mod parse_color;
 mod parse_directive;
 
 use crate::colortable::ColorTable;
 use crate::config::blueprint::directive;
 use crate::config::environ::{CACHE_BLUEPRINTS_DIR, CONFIG_BLUEPRINTS_DIR, POST_EXEC_SCRIPT};
 use crate::logging::{log_as_error, Error, Error::BlueprintError, Error::ExecError};
-use crate::util::is_file;
-use clap::ArgMatches;
+use parse_color::parse_color;
 use parse_directive::Directive;
 use std::fs::{read_dir, DirEntry, File};
-use std::io::{self, BufRead, BufReader};
-use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::io::{BufRead, BufReader};
 use std::process::Command;
 
-pub fn build_blueprints(colors: &mut ColorTable, args: &ArgMatches) -> Result<(), Error> {
+pub fn build_blueprints(colors: &mut ColorTable) -> Result<(), Error> {
     // Looks for blueprints in both cache and config directories
     for dir in &[&*CONFIG_BLUEPRINTS_DIR, &*CACHE_BLUEPRINTS_DIR] {
         // Reads the content of the directory
@@ -57,6 +55,8 @@ fn build_blueprint(path: &DirEntry, colors: &mut ColorTable) -> Result<(), Error
     // Default directive values
     let mut directives = Directive::new_from(&path).map_err(|e| BlueprintError(e))?;
 
+    let mut blueprint_instance = String::new();
+
     // Parses directives and colors
     let mut parsing_directive = true;
     for line in reader.lines() {
@@ -69,11 +69,13 @@ fn build_blueprint(path: &DirEntry, colors: &mut ColorTable) -> Result<(), Error
 
         if parsing_directive {
             directives.parse(&line).map_err(|e| BlueprintError(e))?;
-            continue;
+        } else {
+            blueprint_instance.push_str(&parse_color(&line, colors, &directives));
+            blueprint_instance.push_str("\n");
         }
     }
 
-    println!("{:?}", directives);
+    println!("{}", blueprint_instance);
 
     Ok(())
 }
