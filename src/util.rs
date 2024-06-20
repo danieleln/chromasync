@@ -1,3 +1,4 @@
+use crate::config::environ::HOME_DIR;
 use std::fs::DirEntry;
 use std::fs::File;
 use std::io::Read;
@@ -23,4 +24,15 @@ pub fn is_file(entry: &DirEntry) -> bool {
     }
 
     false
+}
+
+pub fn expand_home_dir(path: &str) -> PathBuf {
+    if !path.starts_with("~/") {
+        return PathBuf::from(path);
+    }
+
+    let mut expanded_path = PathBuf::from(&*HOME_DIR);
+    expanded_path.push(&path[2..]);
+
+    expanded_path
 }

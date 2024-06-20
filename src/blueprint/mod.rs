@@ -1,10 +1,16 @@
+mod parse_directive;
+
 use crate::colortable::ColorTable;
+use crate::config::blueprint::directive;
 use crate::config::environ::{CACHE_BLUEPRINTS_DIR, CONFIG_BLUEPRINTS_DIR, POST_EXEC_SCRIPT};
 use crate::logging::{log_as_error, Error, Error::BlueprintError, Error::ExecError};
 use crate::util::is_file;
 use clap::ArgMatches;
+use parse_directive::Directive;
 use std::fs::{read_dir, DirEntry, File};
+use std::io::{self, BufRead, BufReader};
 use std::io::{Read, Write};
+use std::path::PathBuf;
 use std::process::Command;
 
 pub fn build_blueprints(colors: &mut ColorTable, args: &ArgMatches) -> Result<(), Error> {
@@ -20,8 +26,13 @@ pub fn build_blueprints(colors: &mut ColorTable, args: &ArgMatches) -> Result<()
                         Err(e) => log_as_error(BlueprintError(e.to_string())),
                         Ok(blueprint) => {
                             // Checks if blueprint is a file and runs it
-                            if is_file(&blueprint) {
-                                build_blueprint(&blueprint, colors);
+                            let result = build_blueprint(&blueprint, colors);
+                            if let Err(BlueprintError(e)) = result {
+                                log_as_error(BlueprintError(format!(
+                                    "While parsing blueprint `{}`. {}",
+                                    blueprint.path().display(),
+                                    e
+                                )));
                             }
                         }
                     }
@@ -38,15 +49,31 @@ pub fn build_blueprints(colors: &mut ColorTable, args: &ArgMatches) -> Result<()
     Ok(())
 }
 
-fn build_blueprint(blueprint: &DirEntry, colors: &mut ColorTable) -> Result<(), Error> {
-    // Opens the file
-    let mut blueprint = File::open(blueprint.path()).map_err(|e| BlueprintError(e.to_string()))?;
+fn build_blueprint(path: &DirEntry, colors: &mut ColorTable) -> Result<(), Error> {
+    // Reads the content of the file,
+    let file = File::open(path.path()).map_err(|e| BlueprintError(e.to_string()))?;
+    let reader = BufReader::new(file);
 
-    // Reads its content
-    let mut template = String::new();
-    blueprint
-        .read_to_string(&mut template)
-        .map_err(|e| BlueprintError(e.to_string()))?;
+    // Default directive values
+    let mut directives = Directive::new_from(&path).map_err(|e| BlueprintError(e))?;
+
+    // Parses directives and colors
+    let mut parsing_directive = true;
+    for line in reader.lines() {
+        let line = line.map_err(|e| BlueprintError(e.to_string()))?;
+
+        // Parses directives only at the very beginning of the file
+        if parsing_directive && !line.starts_with(directive::PREFIX) {
+            parsing_directive = false;
+        }
+
+        if parsing_directive {
+            directives.parse(&line).map_err(|e| BlueprintError(e))?;
+            continue;
+        }
+    }
+
+    println!("{:?}", directives);
 
     Ok(())
 }

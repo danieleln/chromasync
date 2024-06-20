@@ -1,4 +1,5 @@
 #![allow(unused)]
+pub mod blueprint;
 pub mod colorscheme;
 pub mod environ;
 
