@@ -1,14 +1,12 @@
 use crate::colortable::rgb::RGB;
 use crate::colortable::ColorTable;
-use crate::config::colorscheme;
 use crate::config::environ::COLORSCHEMES_DIR;
-use crate::logging::{log_as_error, Error, Error::SystemError};
+use crate::logging::{Error, Error::SystemError};
 use clap::ArgMatches;
 use std::fs::read_dir;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 struct ColorschemeInfo {
-    // path: PathBuf,
     name: String,
     background: RGB,
     foreground: RGB,
@@ -41,7 +39,6 @@ impl ColorschemeInfo {
         let background_luminance = background.luminance();
 
         Ok(Self {
-            // path: path.to_path_buf(),
             name: filename,
             background,
             foreground,
@@ -51,21 +48,37 @@ impl ColorschemeInfo {
 }
 
 pub fn list(args: &ArgMatches) -> Result<(), Error> {
+    // Lists only dark/light theme
+    let dark_only: bool = *args.get_one::<bool>("dark").ok_or(false).unwrap();
+    let light_only: bool = *args.get_one::<bool>("light").ok_or(false).unwrap();
+
     // Reads files contained in COLORSCHEMES_DIR, than converts them
     // into ColorschemeInfo structs
     let mut colorscheme_infos: Vec<_> = read_dir(&*COLORSCHEMES_DIR)
         .map_err(|e| SystemError(e.to_string()))?
         .filter_map(Result::ok)
         .map(|entry| entry.path())
+        // Keeps only files
         .filter(|path| path.is_file())
+        // Converts to ColorschemeInfo structs
         .map(|path| ColorschemeInfo::new(&path))
         .filter_map(Result::ok)
+        // Filters based on the luminance
+        .filter(|c| {
+            if (dark_only && c.background_luminance >= 0.5)
+                || (light_only && c.background_luminance < 0.5)
+            {
+                false
+            } else {
+                true
+            }
+        })
         .collect();
 
     // Finds the length of the longest colorscheme name
     let max_len: usize = colorscheme_infos
         .iter()
-        .map(|c| c.name.len())
+        .map(|c| c.name.chars().count())
         .max()
         .unwrap();
 
@@ -73,7 +86,7 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
     colorscheme_infos.sort_by(|a, b| a.name.cmp(&b.name));
 
     for colorscheme in colorscheme_infos {
-        let len_diff = max_len - colorscheme.name.len();
+        let len_diff = max_len - colorscheme.name.chars().count();
         let extra_spaces: String = std::iter::repeat(' ').take(len_diff as usize).collect();
 
         let _ = write_with_custom_colors(

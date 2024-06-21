@@ -2,7 +2,6 @@ pub mod rgb;
 mod visitor;
 
 use crate::config::blueprint::MIXED_COLOR_FIELD_SEPARATOR;
-use crate::logging::Error;
 use crate::util::read_file;
 use rgb::RGB;
 use std::collections::HashMap;

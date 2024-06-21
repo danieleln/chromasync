@@ -56,7 +56,8 @@ impl RGB {
     // Finds the luminance of a color
     pub fn luminance(&self) -> f32 {
         // ITU-R BT.709 standard
-        0.2126_f32 * self.0 as f32 + 0.7152_f32 * self.1 as f32 + 0.0722_f32 * self.2 as f32
+        (0.2126_f32 * self.0 as f32 + 0.7152_f32 * self.1 as f32 + 0.0722_f32 * self.2 as f32)
+            / 255_f32
     }
 }
 
