@@ -82,7 +82,11 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
         .unwrap();
 
     // Sorts them in alphabetical order
-    let sort_by = args.get_one::<String>("sort-by").ok_or("name").unwrap();
+    let default_ordering = "name".to_string();
+    let sort_by = args
+        .get_one::<String>("sort-by")
+        .or(Some(&default_ordering))
+        .unwrap();
     match sort_by.as_str() {
         "name" => colorscheme_infos.sort_by(|a, b| a.name.cmp(&b.name)),
         "luminance" | "lum" | "brightness" => colorscheme_infos.sort_by(|a, b| {
