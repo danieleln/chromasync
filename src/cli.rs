@@ -1,6 +1,15 @@
 use crate::config;
-use clap::{Arg, ArgAction, ArgGroup, Command};
+use clap::{builder::PossibleValue, Arg, ArgAction, ArgGroup, Command};
 use const_format::formatcp;
+// use serde;
+//
+// #[derive(clap::ValueEnum, Clone, Default, Debug, Serialize)]
+// #[serde(rename_all = "kebab-case")]
+// enum ListSortBy {
+//     #[default]
+//     Name,
+//     Luminance,
+// }
 
 pub fn build_parser() -> Command {
     Command::new(config::info::APP_NAME)
@@ -77,7 +86,19 @@ pub fn build_parser() -> Command {
                         .action(ArgAction::SetTrue)
                         .required(false),
                 )
-                .group(ArgGroup::new("light-dark-group").args(&["dark", "light"])),
+                .group(ArgGroup::new("light-dark-group").args(&["dark", "light"]))
+                // Sort order
+                .arg(
+                    Arg::new("sort-by")
+                        .long("sort-by")
+                        .help("Specify the sorting order")
+                        .required(false)
+                        .value_parser([
+                            PossibleValue::new("name"),
+                            PossibleValue::new("luminance")
+                                .aliases(["brightness", "lum"]),
+                        ])
+                ),
         )
 
         /////////////////////
@@ -177,6 +198,19 @@ mod tests {
         should_fail_to_parse(
             "list -d -l",
             "Should fail to parse when both --light and --dark options are specified, but got ok",
+        );
+    }
+
+    #[test]
+    fn list_sort_by() {
+        should_parse_auto_err("list --sort-by name");
+        should_parse_auto_err("list --sort-by luminance");
+        should_parse_auto_err("list --sort-by lum");
+        should_parse_auto_err("list --sort-by brightness");
+
+        should_fail_to_parse(
+            "list --sort-by name --sort-by luminance",
+            "Should fail to parse when more --sort-by args are specified",
         );
     }
 

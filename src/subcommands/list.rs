@@ -83,8 +83,18 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
         .unwrap();
 
     // Sorts them in alphabetical order
-    colorscheme_infos.sort_by(|a, b| a.name.cmp(&b.name));
+    let sort_by = args.get_one::<String>("sort-by").ok_or("name").unwrap();
+    match sort_by.as_str() {
+        "name" => colorscheme_infos.sort_by(|a, b| a.name.cmp(&b.name)),
+        "luminance" | "lum" | "brightness" => colorscheme_infos.sort_by(|a, b| {
+            a.background_luminance
+                .partial_cmp(&b.background_luminance)
+                .unwrap()
+        }),
+        _ => unreachable!(),
+    }
 
+    // Prints the colorschemes
     for colorscheme in colorscheme_infos {
         let len_diff = max_len - colorscheme.name.chars().count();
         let extra_spaces: String = std::iter::repeat(' ').take(len_diff as usize).collect();
@@ -102,6 +112,7 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
 use std::io::{self, Write};
 use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
 
+// Writes strings to the terminal using custom RGB colors as bg/fg
 fn write_with_custom_colors(bg: &RGB, fg: &RGB, text: String) -> io::Result<()> {
     // Creates the color spec
     let fg = Color::Rgb(fg.0, fg.1, fg.2);
