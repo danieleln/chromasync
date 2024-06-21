@@ -7,7 +7,7 @@ static REGEX_HEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^#?[0-9a-fA-F]{6}$").u
 
 // RGB tuple
 #[derive(Clone, Debug)]
-pub struct RGB(u8, u8, u8);
+pub struct RGB(pub u8, pub u8, pub u8);
 
 impl RGB {
     // Converts an HEX color into an RGB tuple

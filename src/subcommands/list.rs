@@ -62,14 +62,51 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
         .filter_map(Result::ok)
         .collect();
 
-    let max_len = colorscheme_infos.iter().map(|c| c.name.len());
+    // Finds the length of the longest colorscheme name
+    let max_len: usize = colorscheme_infos
+        .iter()
+        .map(|c| c.name.len())
+        .max()
+        .unwrap();
 
     // Sorts them in alphabetical order
     colorscheme_infos.sort_by(|a, b| a.name.cmp(&b.name));
 
     for colorscheme in colorscheme_infos {
-        println!("{}", colorscheme.name);
+        let len_diff = max_len - colorscheme.name.len();
+        let extra_spaces: String = std::iter::repeat(' ').take(len_diff as usize).collect();
+
+        let _ = write_with_custom_colors(
+            &colorscheme.background,
+            &colorscheme.foreground,
+            format!(" {}{} \n", colorscheme.name, extra_spaces),
+        );
     }
+
+    Ok(())
+}
+
+use std::io::{self, Write};
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+
+fn write_with_custom_colors(bg: &RGB, fg: &RGB, text: String) -> io::Result<()> {
+    // Creates the color spec
+    let fg = Color::Rgb(fg.0, fg.1, fg.2);
+    let bg = Color::Rgb(bg.0, bg.1, bg.2);
+
+    let mut color_spec = ColorSpec::new();
+    color_spec.set_fg(Some(fg));
+    color_spec.set_bg(Some(bg));
+
+    // Creates a new StandardStream and sets the color specification
+    let mut stdout = StandardStream::stdout(ColorChoice::Always);
+    stdout.set_color(&color_spec)?;
+
+    // Prints the colored text
+    write!(&mut stdout, "{}", text)?;
+
+    // Reset the color to default
+    stdout.reset()?;
 
     Ok(())
 }
