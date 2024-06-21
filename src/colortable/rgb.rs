@@ -6,7 +6,7 @@ use regex::Regex;
 static REGEX_HEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^#?[0-9a-fA-F]{6}$").unwrap());
 
 // RGB tuple
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct RGB(u8, u8, u8);
 
 impl RGB {
@@ -51,6 +51,12 @@ impl RGB {
             HEX_6_DIGITS_WO_HASHTAG => Ok(hex_str),
             _ => Err(format!("Invalid color format `{}`", format)),
         }
+    }
+
+    // Finds the luminance of a color
+    pub fn luminance(&self) -> f32 {
+        // ITU-R BT.709 standard
+        0.2126_f32 * self.0 as f32 + 0.7152_f32 * self.1 as f32 + 0.0722_f32 * self.2 as f32
     }
 }
 

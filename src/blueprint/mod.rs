@@ -4,7 +4,9 @@ mod parse_directive;
 use crate::colortable::ColorTable;
 use crate::config::blueprint::directive;
 use crate::config::environ::{CACHE_BLUEPRINTS_DIR, CONFIG_BLUEPRINTS_DIR, POST_EXEC_SCRIPT};
-use crate::logging::{log_as_error, Error, Error::BlueprintError, Error::ExecError};
+use crate::logging::{
+    log_as_error, Error, Error::BlueprintError, Error::ExecError, Error::SystemError,
+};
 use parse_color::parse_color;
 use parse_directive::Directive;
 use std::fs::{read_dir, DirEntry, File};
@@ -16,12 +18,12 @@ pub fn build_blueprints(colors: &mut ColorTable) -> Result<(), Error> {
     for dir in &[&*CONFIG_BLUEPRINTS_DIR, &*CACHE_BLUEPRINTS_DIR] {
         // Reads the content of the directory
         match read_dir(dir) {
-            Err(e) => log_as_error(BlueprintError(e.to_string())),
+            Err(e) => log_as_error(SystemError(e.to_string())),
             Ok(blueprints) => {
                 // Iterates over the content of each directory
                 for blueprint in blueprints {
                     match blueprint {
-                        Err(e) => log_as_error(BlueprintError(e.to_string())),
+                        Err(e) => log_as_error(SystemError(e.to_string())),
                         Ok(blueprint) => {
                             // Checks if blueprint is a file and runs it
                             let result = build_blueprint(&blueprint, colors);

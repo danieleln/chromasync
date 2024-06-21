@@ -35,6 +35,9 @@ pub enum Error {
 
     #[error("{}", .0)]
     ExecError(String),
+
+    #[error("{}", .0)]
+    SystemError(String),
 }
 
 impl From<clap::error::Error> for Error {

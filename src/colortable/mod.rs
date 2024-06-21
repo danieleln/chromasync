@@ -3,9 +3,11 @@ mod visitor;
 
 use crate::config::blueprint::MIXED_COLOR_FIELD_SEPARATOR;
 use crate::logging::Error;
+use crate::util::read_file;
 use rgb::RGB;
 use std::collections::HashMap;
 use std::ops::{Deref, DerefMut};
+use std::path::PathBuf;
 
 // Color table that holds all the colors of the colorscheme plus
 // OS-specific colors and mixed colors (weighted average of two colors)
@@ -17,8 +19,17 @@ impl ColorTable {
         ColorTable(HashMap::with_capacity(capacity))
     }
 
-    pub fn from_json_str(str: &str) -> Result<Self, Error> {
-        serde_json::from_str(str).map_err(|e| Error::ColorschemeError(e.to_string()))
+    pub fn from_file_path(path: &PathBuf) -> Result<Self, String> {
+        // Checks if the colorscheme file exists
+        if !path.exists() {
+            return Err(format!("Can't find colorscheme `{}`.", path.display()));
+        }
+
+        // Reads the file content
+        let json_str = read_file(&path)?;
+
+        // Parses the colorscheme
+        serde_json::from_str(&json_str).map_err(|e| e.to_string())
     }
 
     pub fn get_composite(&mut self, color1: &String, amount: u8, color2: &String) -> Option<&RGB> {
