@@ -44,6 +44,10 @@ pub static OUT_DIR: Lazy<PathBuf> = Lazy::new(|| CACHE_DIR.join("out"));
 // Blueprints directory (inside CACHE_DIR) -> managed by other plugins
 pub static CACHE_BLUEPRINTS_DIR: Lazy<PathBuf> = Lazy::new(|| CACHE_DIR.join("blueprints"));
 
+// Current colorscheme file
+pub static CURRENT_COLORSCHEME_FILE: Lazy<PathBuf> =
+    Lazy::new(|| CACHE_DIR.join("current-colorscheme.json"));
+
 // Builds all directories
 pub fn build_dirs() -> Result<(), Error> {
     use std::fs;
