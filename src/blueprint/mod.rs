@@ -11,6 +11,7 @@ use parse_color::parse_color;
 use parse_directive::Directive;
 use std::fs::{read_dir, DirEntry, File};
 use std::io::{BufRead, BufReader, Write};
+use std::path::PathBuf;
 use std::process::Command;
 
 pub fn build_blueprints(colors: &mut ColorTable) -> Result<(), Error> {
@@ -26,7 +27,7 @@ pub fn build_blueprints(colors: &mut ColorTable) -> Result<(), Error> {
                         Err(e) => log_as_error(SystemError(e.to_string())),
                         Ok(blueprint) => {
                             // Checks if blueprint is a file and runs it
-                            let result = build_blueprint(&blueprint, colors);
+                            let result = build_blueprint_form_dir_entry(&blueprint, colors);
                             if let Err(BlueprintError(e)) = result {
                                 log_as_error(BlueprintError(format!(
                                     "While parsing blueprint `{}`. {}",
@@ -49,9 +50,13 @@ pub fn build_blueprints(colors: &mut ColorTable) -> Result<(), Error> {
     Ok(())
 }
 
-fn build_blueprint(path: &DirEntry, colors: &mut ColorTable) -> Result<(), Error> {
+fn build_blueprint_form_dir_entry(path: &DirEntry, colors: &mut ColorTable) -> Result<(), Error> {
+    build_blueprint(&path.path(), colors)
+}
+
+pub fn build_blueprint(path: &PathBuf, colors: &mut ColorTable) -> Result<(), Error> {
     // Reads the content of the file,
-    let file = File::open(path.path()).map_err(|e| BlueprintError(e.to_string()))?;
+    let file = File::open(path).map_err(|e| BlueprintError(e.to_string()))?;
     let reader = BufReader::new(file);
 
     // Default directive values
@@ -79,7 +84,11 @@ fn build_blueprint(path: &DirEntry, colors: &mut ColorTable) -> Result<(), Error
 
     // Writes the blueprint instance to a file
     let out_dir = directives.output_directory;
-    let out_file = out_dir.join(path.file_name());
+    let file_name = path.file_name().ok_or(SystemError(format!(
+        "Missing file name `{}`",
+        path.display()
+    )))?;
+    let out_file = out_dir.join(file_name);
     let mut file = File::create(out_file).map_err(|e| BlueprintError(e.to_string()))?;
 
     file.write_all(blueprint_instance.as_bytes())

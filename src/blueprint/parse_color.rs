@@ -6,7 +6,7 @@ use crate::logging::{log_as_warning, Error::BlueprintError};
 use const_format::formatcp;
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
-use std::fs::DirEntry;
+use std::path::PathBuf;
 
 // Assuming MIXED_COLOR_FIELD_SEPARATOR = ":", the regex becomes r"\{(\w+)(:(\d+):(\w+))?\}"
 static COLOR_REGEX: Lazy<Regex> = Lazy::new(|| {
@@ -20,7 +20,7 @@ pub fn parse_color(
     line: &str,
     colors: &mut ColorTable,
     directives: &Directive,
-    blueprint: &DirEntry,
+    blueprint: &PathBuf,
 ) -> String {
     COLOR_REGEX
         .replace_all(line, |caps: &Captures| {
@@ -56,7 +56,7 @@ pub fn parse_color(
                 } else {
                     log_as_warning(BlueprintError(format!(
                         "While parsing blueprint `{}`. An error occurred while formatting color `{}` as `{}`. Can't replace it in the blueprint.",
-                        blueprint.path().display(),
+                        blueprint.display(),
                         whole_color,
                         &directives.color_format
                     )));
@@ -64,7 +64,7 @@ pub fn parse_color(
             } else {
                 log_as_warning(BlueprintError(format!(
                     "While parsing blueprint `{}`. An error occurred while retrieving color `{}`. Can't replace it in the blueprint.",
-                    blueprint.path().display(),
+                    blueprint.display(),
                     whole_color,
                 )));
             }
