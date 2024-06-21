@@ -1,5 +1,6 @@
 use crate::colortable::rgb::RGB;
 use crate::colortable::ColorTable;
+use crate::config::colorscheme;
 use crate::config::environ::COLORSCHEMES_DIR;
 use crate::logging::{Error, Error::SystemError};
 use clap::ArgMatches;
@@ -30,10 +31,8 @@ impl ColorschemeInfo {
         let colortable = ColorTable::from_file_path(&path.to_path_buf())?;
 
         // Retrieves the bg/fg colors
-        // FIX: prone to error. When updating crate::config::colorscheme::COLOR_NAMES,
-        //      one has to remember to also update these two lines.
-        let background = colortable.get("background").unwrap().clone();
-        let foreground = colortable.get("foreground").unwrap().clone();
+        let background = colortable.get(colorscheme::BACKGROUND).unwrap().clone();
+        let foreground = colortable.get(colorscheme::FOREGROUND).unwrap().clone();
 
         // Evaluates the luminance
         let background_luminance = background.luminance();
