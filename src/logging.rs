@@ -42,7 +42,12 @@ pub enum Error {
 
 impl From<clap::error::Error> for Error {
     fn from(e: clap::error::Error) -> Self {
-        Error::InvalidCommandLineArgument(e.to_string().split_off(7))
+        let mut msg = e.to_string();
+        if msg.starts_with("error: ") {
+            Error::InvalidCommandLineArgument(msg.split_off(7))
+        } else {
+            Error::InvalidCommandLineArgument(msg)
+        }
     }
 }
 
