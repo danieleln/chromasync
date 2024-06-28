@@ -1,6 +1,13 @@
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 
+// TODO: improve error system!
+// FIX: when using the `--help` flag, the log_as_error function treats
+//      the clap error as an actual error, prepeding it with `[ERR]`.
+//      Possible solution: create an additional Error status (like
+//      CommandLineHelp) and instruct log_as not to prepend the `[ERR]`
+//      tag in that case.
+
 lazy_static! {
     static ref VERBOSE: Mutex<bool> = Mutex::new(false);
     static ref QUIET: Mutex<bool> = Mutex::new(false);
