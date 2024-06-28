@@ -12,6 +12,7 @@ struct ColorschemeInfo {
     background: RGB,
     foreground: RGB,
     background_luminance: f32,
+    contrast: f32,
 }
 
 impl ColorschemeInfo {
@@ -34,14 +35,17 @@ impl ColorschemeInfo {
         let background = colortable.get(colorscheme::BACKGROUND).unwrap().clone();
         let foreground = colortable.get(colorscheme::FOREGROUND).unwrap().clone();
 
-        // Evaluates the luminance
+        // Evaluates luminance and contrast
         let background_luminance = background.luminance();
+        let foreground_luminance = foreground.luminance();
+        let contrast = foreground_luminance - background_luminance;
 
         Ok(Self {
             name: filename,
             background,
             foreground,
             background_luminance,
+            contrast,
         })
     }
 }
@@ -51,7 +55,7 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
     let dark_only: bool = *args.get_one::<bool>("dark").ok_or(false).unwrap();
     let light_only: bool = *args.get_one::<bool>("light").ok_or(false).unwrap();
 
-    // Reads files contained in COLORSCHEMES_DIR, than converts them
+    // Reads files contained in COLORSCHEMES_DIR and converts them
     // into ColorschemeInfo structs
     let mut colorscheme_infos: Vec<_> = read_dir(&*COLORSCHEMES_DIR)
         .map_err(|e| SystemError(e.to_string()))?
@@ -81,7 +85,7 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
         .max()
         .unwrap();
 
-    // Sorts them in alphabetical order
+    // Sorts colorschemes according to the --sort-by flag
     let default_ordering = "name".to_string();
     let sort_by = args
         .get_one::<String>("sort-by")
@@ -92,6 +96,11 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
         "luminance" | "lum" | "brightness" => colorscheme_infos.sort_by(|a, b| {
             a.background_luminance
                 .partial_cmp(&b.background_luminance)
+                .unwrap()
+        }),
+        "contrast" => colorscheme_infos.sort_by(|a, b| {
+            a.contrast //
+                .partial_cmp(&b.contrast)
                 .unwrap()
         }),
         _ => unreachable!(),

@@ -1,15 +1,6 @@
 use crate::config;
 use clap::{builder::PossibleValue, Arg, ArgAction, ArgGroup, Command};
 use const_format::formatcp;
-// use serde;
-//
-// #[derive(clap::ValueEnum, Clone, Default, Debug, Serialize)]
-// #[serde(rename_all = "kebab-case")]
-// enum ListSortBy {
-//     #[default]
-//     Name,
-//     Luminance,
-// }
 
 pub fn build_parser() -> Command {
     Command::new(config::info::APP_NAME)
@@ -97,6 +88,7 @@ pub fn build_parser() -> Command {
                             PossibleValue::new("name"),
                             PossibleValue::new("luminance")
                                 .aliases(["brightness", "lum"]),
+                            PossibleValue::new("contrast"),
                         ])
                 ),
         )
