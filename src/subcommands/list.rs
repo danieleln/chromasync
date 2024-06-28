@@ -85,17 +85,29 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
         .or(Some(&default_ordering))
         .unwrap();
     match sort_by.as_str() {
-        "name" => colorscheme_infos.sort_by(|a, b| a.name.cmp(&b.name)),
-        "luminance" | "lum" | "brightness" => colorscheme_infos.sort_by(|a, b| {
+        "name" | "n" => colorscheme_infos.sort_by(|a, b| a.name.cmp(&b.name)),
+        "background_luminance"
+        | "bg-lum"
+        | "bg_lum"
+        | "bglum"
+        | "background"
+        | "bg"
+        | "luminance"
+        | "lum"
+        | "background-brightness"
+        | "background_brightness"
+        | "brightness" => colorscheme_infos.sort_by(|a, b| {
             a.background_luminance
                 .partial_cmp(&b.background_luminance)
                 .unwrap()
         }),
-        "contrast" => colorscheme_infos.sort_by(|a, b| {
-            a.contrast //
-                .partial_cmp(&b.contrast)
-                .unwrap()
-        }),
+        "contrast" | "contr" | "cont" | "con" | "cntr" | "cnt" => {
+            colorscheme_infos.sort_by(|a, b| {
+                a.contrast //
+                    .partial_cmp(&b.contrast)
+                    .unwrap()
+            })
+        }
         _ => unreachable!(),
     }
 
@@ -108,9 +120,9 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
 
     // Prints the headline
     println!(
-        " {:<width$} {:<4} {:<4}",
+        "│ {:<width$} │ {:<8} │ {:<4} │",
         "NAME",
-        "LUM",
+        "LUM (BG)",
         "CONT",
         width = max_len
     );
@@ -121,7 +133,7 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
             &colorscheme.background,
             &colorscheme.foreground,
             format!(
-                " {:<width$} {:.2} {:.2} \n",
+                "│ {:<width$} │ {:<8.2} │ {:<4.2} │\n",
                 colorscheme.name,
                 colorscheme.background_luminance,
                 colorscheme.contrast,

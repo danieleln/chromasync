@@ -85,10 +85,12 @@ pub fn build_parser() -> Command {
                         .help("Specify the sorting order")
                         .required(false)
                         .value_parser([
-                            PossibleValue::new("name"),
-                            PossibleValue::new("luminance")
-                                .aliases(["brightness", "lum"]),
-                            PossibleValue::new("contrast"),
+                            PossibleValue::new("name")
+                                .aliases(["n"]),
+                            PossibleValue::new("background-luminance")
+                                .aliases(["background_luminance", "bg-lum", "bg_lum", "bglum", "background", "bg", "luminance", "lum", "background-brightness", "background_brightness", "brightness"]),
+                            PossibleValue::new("contrast")
+                                .aliases(["contr", "cont", "con", "cntr", "cnt"]),
                         ])
                 ),
         )
@@ -196,9 +198,27 @@ mod tests {
     #[test]
     fn list_sort_by() {
         should_parse_auto_err("list --sort-by name");
+        should_parse_auto_err("list --sort-by n");
+
+        should_parse_auto_err("list --sort-by background-luminance");
+        should_parse_auto_err("list --sort-by background_luminance");
+        should_parse_auto_err("list --sort-by bg-lum");
+        should_parse_auto_err("list --sort-by bg_lum");
+        should_parse_auto_err("list --sort-by bglum");
+        should_parse_auto_err("list --sort-by background");
+        should_parse_auto_err("list --sort-by bg");
         should_parse_auto_err("list --sort-by luminance");
         should_parse_auto_err("list --sort-by lum");
+        should_parse_auto_err("list --sort-by background-brightness");
+        should_parse_auto_err("list --sort-by background_brightness");
         should_parse_auto_err("list --sort-by brightness");
+
+        should_parse_auto_err("list --sort-by contrast");
+        should_parse_auto_err("list --sort-by contr");
+        should_parse_auto_err("list --sort-by cont");
+        should_parse_auto_err("list --sort-by con");
+        should_parse_auto_err("list --sort-by cntr");
+        should_parse_auto_err("list --sort-by cnt");
 
         should_fail_to_parse(
             "list --sort-by name --sort-by luminance",
