@@ -38,7 +38,7 @@ impl ColorschemeInfo {
         // Evaluates luminance and contrast
         let background_luminance = background.luminance();
         let foreground_luminance = foreground.luminance();
-        let contrast = foreground_luminance - background_luminance;
+        let contrast = (foreground_luminance - background_luminance).abs();
 
         Ok(Self {
             name: filename,
@@ -78,13 +78,6 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
         })
         .collect();
 
-    // Finds the length of the longest colorscheme name
-    let max_len: usize = colorscheme_infos
-        .iter()
-        .map(|c| c.name.chars().count())
-        .max()
-        .unwrap();
-
     // Sorts colorschemes according to the --sort-by flag
     let default_ordering = "name".to_string();
     let sort_by = args
@@ -106,15 +99,34 @@ pub fn list(args: &ArgMatches) -> Result<(), Error> {
         _ => unreachable!(),
     }
 
+    // Finds the length of the longest colorscheme name
+    let max_len: usize = colorscheme_infos
+        .iter()
+        .map(|c| c.name.chars().count())
+        .max()
+        .unwrap();
+
+    // Prints the headline
+    println!(
+        " {:<width$} {:<4} {:<4}",
+        "NAME",
+        "LUM",
+        "CONT",
+        width = max_len
+    );
+
     // Prints the colorschemes
     for colorscheme in colorscheme_infos {
-        let len_diff = max_len - colorscheme.name.chars().count();
-        let extra_spaces: String = std::iter::repeat(' ').take(len_diff as usize).collect();
-
         let _ = write_with_custom_colors(
             &colorscheme.background,
             &colorscheme.foreground,
-            format!(" {}{} \n", colorscheme.name, extra_spaces),
+            format!(
+                " {:<width$} {:.2} {:.2} \n",
+                colorscheme.name,
+                colorscheme.background_luminance,
+                colorscheme.contrast,
+                width = max_len,
+            ),
         );
     }
 
