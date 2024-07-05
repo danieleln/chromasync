@@ -33,6 +33,7 @@ fn app() -> Result<(), Error> {
         Some(("list", args)) => subcommands::list(args),
         Some(("load", args)) => subcommands::load(args),
         Some(("reload", args)) => subcommands::reload(args),
+        Some(("preview", args)) => subcommands::preview(args),
         _ => unreachable!(),
     }?;
 

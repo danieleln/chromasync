@@ -25,6 +25,23 @@ pub fn build_parser() -> Command {
                 )
         )
 
+        /////////////////////
+        // Preview subcommand //
+        /////////////////////
+        .subcommand(
+            Command::new("preview")
+                .about("Shows the color test table for a given colorscheme")
+                // Colorscheme positional argument
+                .arg(
+                    Arg::new("colorscheme")
+                        .help(formatcp!(
+                            "Name of the colorscheme to preview. Run `{} list` to list the available themes",
+                            config::info::APP_NAME
+                        ))
+                        .required(true),
+                )
+        )
+
         ///////////////////////
         // Reload subcommand //
         ///////////////////////
@@ -156,6 +173,15 @@ mod tests {
         should_parse_auto_err("load my-theme");
         should_fail_to_parse(
             "load",
+            "Should fail cause positional argument `colorscheme` is missing, but got ok",
+        );
+    }
+
+    #[test]
+    fn preview() {
+        should_parse_auto_err("preview my-theme");
+        should_fail_to_parse(
+            "preview",
             "Should fail cause positional argument `colorscheme` is missing, but got ok",
         );
     }
