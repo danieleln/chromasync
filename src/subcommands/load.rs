@@ -3,7 +3,7 @@ use crate::colortable::ColorTable;
 use crate::config::blueprint::directive::HEX_6_DIGITS_W_HASHTAG;
 use crate::config::colorscheme::FILE_EXTENSION;
 use crate::config::environ::{COLORSCHEMES_DIR, CURRENT_COLORSCHEME_FILE};
-use crate::logging::{Error, log_as_warning};
+use crate::logging::{log_as_warning, Error};
 use clap::ArgMatches;
 use std::collections::HashMap;
 use std::fs::File;

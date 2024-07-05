@@ -1,5 +1,6 @@
 mod blueprint;
 mod cli;
+mod color_test_table;
 mod colortable;
 mod config;
 mod logging;

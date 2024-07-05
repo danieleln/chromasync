@@ -2,6 +2,7 @@
 pub mod blueprint;
 pub mod colorscheme;
 pub mod environ;
+pub mod preview;
 
 /////////////////
 // Info Module //

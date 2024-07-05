@@ -26,3 +26,30 @@ pub fn expand_home_dir(path: &str) -> PathBuf {
 
     expanded_path
 }
+
+use crate::colortable::rgb::RGB;
+use std::io::{self, Write};
+use termcolor::{Color, ColorChoice, ColorSpec, StandardStream, WriteColor};
+
+// Writes strings to the terminal using custom RGB colors as bg/fg
+pub fn print_with_custom_colors(bg: &RGB, fg: &RGB, text: String) -> io::Result<()> {
+    // Creates the color spec
+    let fg = Color::Rgb(fg.0, fg.1, fg.2);
+    let bg = Color::Rgb(bg.0, bg.1, bg.2);
+
+    let mut color_spec = ColorSpec::new();
+    color_spec.set_fg(Some(fg));
+    color_spec.set_bg(Some(bg));
+
+    // Creates a new StandardStream and sets the color specification
+    let mut stdout = StandardStream::stdout(ColorChoice::Always);
+    stdout.set_color(&color_spec)?;
+
+    // Prints the colored text
+    write!(&mut stdout, "{}", text)?;
+
+    // Reset the color to default
+    stdout.reset()?;
+
+    Ok(())
+}
