@@ -1,4 +1,5 @@
 use crate::blueprint::build_blueprints;
+use crate::color_test_table::print_color_test_table;
 use crate::colortable::ColorTable;
 use crate::config::blueprint::directive::HEX_6_DIGITS_W_HASHTAG;
 use crate::config::colorscheme::FILE_EXTENSION;
@@ -32,6 +33,9 @@ pub fn load(args: &ArgMatches) -> Result<(), Error> {
 
     // Instantiates all the blueprints
     build_blueprints(&mut colors)?;
+
+    // Prints the color test table
+    print_color_test_table(&colors);
 
     Ok(())
 }
