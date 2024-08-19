@@ -8,6 +8,7 @@ mod subcommands;
 mod util;
 
 use logging::{log_as_error, set_verbosity, Error};
+use std::process;
 
 fn main() {
     let result = app();
@@ -19,6 +20,9 @@ fn main() {
             }
             msg => {
                 log_as_error(msg);
+
+                // FIX: add different error codes!
+                process::exit(1);
             }
         }
     }
