@@ -1,12 +1,9 @@
 use lazy_static::lazy_static;
 use std::sync::Mutex;
 
-// TODO: improve error system!
-// FIX: when using the `--help` flag, the log_as_error function treats
-//      the clap error as an actual error, prepeding it with `[ERR]`.
-//      Possible solution: create an additional Error status (like
-//      CommandLineHelp) and instruct log_as not to prepend the `[ERR]`
-//      tag in that case.
+// TODO: Improve log system!
+//       Check project `https://github.com/danieleln/latex-wizard`
+//       for a slightly better alternative
 
 lazy_static! {
     static ref VERBOSE: Mutex<bool> = Mutex::new(false);
@@ -29,6 +26,9 @@ pub fn set_verbosity(args: &clap::ArgMatches) {
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
     #[error("{}", .0)]
+    HelpMessage(String),
+
+    #[error("{}", .0)]
     InvalidCommandLineArgument(String),
 
     #[error("{}", .0)]
@@ -49,11 +49,16 @@ pub enum Error {
 
 impl From<clap::error::Error> for Error {
     fn from(e: clap::error::Error) -> Self {
-        let mut msg = e.to_string();
-        if msg.starts_with("error: ") {
-            Error::InvalidCommandLineArgument(msg.split_off(7))
-        } else {
-            Error::InvalidCommandLineArgument(msg)
+        match e.kind() {
+            clap::error::ErrorKind::DisplayHelp => Self::HelpMessage(e.to_string()),
+            _ => {
+                let mut msg = e.to_string();
+                if msg.starts_with("error: ") {
+                    Self::InvalidCommandLineArgument(msg.split_off(7))
+                } else {
+                    Self::InvalidCommandLineArgument(msg)
+                }
+            }
         }
     }
 }
@@ -86,9 +91,9 @@ pub fn log_as(level: Level, error: Error) {
     println!("[{}\x1b[0m] {}", label, error);
 }
 
-pub fn log_as_info(e: Error) {
-    log_as(Level::Info, e);
-}
+// pub fn log_as_info(e: Error) {
+//     log_as(Level::Info, e);
+// }
 
 pub fn log_as_warning(e: Error) {
     log_as(Level::Warning, e);

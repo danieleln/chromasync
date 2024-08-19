@@ -13,7 +13,14 @@ fn main() {
     let result = app();
 
     if let Err(e) = result {
-        log_as_error(e);
+        match e {
+            Error::HelpMessage(msg) => {
+                println!("{}", msg);
+            }
+            msg => {
+                log_as_error(msg);
+            }
+        }
     }
 }
 
