@@ -7,6 +7,7 @@ use crate::util::expand_home_dir;
 use const_format::formatcp;
 use once_cell::sync::Lazy;
 use regex::Regex;
+use std::fs;
 use std::path::PathBuf;
 
 static REGEX_KEY_VAL_DIRECTIVE: Lazy<Regex> =
@@ -79,15 +80,19 @@ impl Directive {
 
     fn update_output_directory(&mut self, output_directory: &str) -> Result<(), String> {
         let output_directory = expand_home_dir(&output_directory);
+
         // Checks if the directory exists and if it's actually
         // a directory
         if !output_directory.exists() {
-            return Err(format!(
-                "Output directory `{}` doesn't exist.",
-                output_directory.display(),
-            ));
-        }
-        if !output_directory.is_dir() {
+            // Try to build the directory
+            if let Err(e) = fs::create_dir_all(&output_directory) {
+                return Err(format!(
+                    "Failed to create the missing output directory `{}`\n{}",
+                    output_directory.display(),
+                    e.to_string()
+                ));
+            }
+        } else if !output_directory.is_dir() {
             return Err(format!(
                 "Output directory `{}` is not a directory.",
                 output_directory.display(),
@@ -130,7 +135,7 @@ mod tests {
             );
             assert!(
                 d.color_format == color_format,
-                "Directive `{}`. Color format did not updated correctly",
+                "Directive `{}`. Color format did not update correctly",
                 statement
             );
         }
@@ -150,7 +155,7 @@ mod tests {
         );
         assert!(
             d.output_directory.to_str().unwrap() == out_dir,
-            "Directive `{}`. Output directory did not updated correctly",
+            "Directive `{}`. Output directory did not update correctly",
             statement
         );
     }
